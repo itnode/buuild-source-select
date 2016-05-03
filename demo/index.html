@@ -20,17 +20,14 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
     <p>An example of <code>&lt;buuild-source-select&gt;</code>:</p>
 
-    <button>Say Something</button>
 
-    <buuild-source-select author='{"name": "Lord Meowser", "image": "http://placekitten.com/g/200/300"}' fancy>
-      <h2>Hello buuild-source-select</h2>
-    </buuild-source-select>
+    <buuild-source-select>
+        <buuild-source-select-item tree-id="99" categories-uuid="abc,def">Tree 99 <em>ABC</em> <em>DEF</em></buuild-source-select-item>
+        <buuild-source-select-item tree-id="12" categories-uuid="abc,klm">Tree 12 <em>ABC</em> <em>KLM</em></buuild-source-select-item>
+        <buuild-source-select-item tree-id="15" categories-uuid="abc,opq">Tree 15 <em>ABC</em> <em>OPQ</em></buuild-source-select-item>
 
-    <script>
-      document.querySelector('button').addEventListener('click', function() {
-        alert(document.querySelector('buuild-source-select').sayHello('Hallo!'));
-      });
-    </script>
+   </buuild-source-select>
 
+   
   </body>
 </html>

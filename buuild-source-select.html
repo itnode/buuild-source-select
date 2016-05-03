@@ -10,11 +10,14 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../polymer/polymer.html">
 
 <!--
-An element providing a solution to no problem in particular.
+
+
 
 Example:
 
-    <buuild-source-select></buuild-source-select>
+    <buuild-source-select>
+        <buuild-source-select-item tree-id="99" categories="abc,def"></buuild-source-select-item>
+    </buuild-source-select>
 
 @demo
 -->
@@ -26,22 +29,44 @@ Example:
       box-sizing: border-box;
     }
 
-    .author img {
-      float: left;
-      margin-right: 5px;
-      max-height: 100px;
-      max-width: 100px;
-    }
   </style>
 
   <template>
-    <h1>&lt;buuild-source-select&gt;</h1>
     <content></content>
-    <p class="author">
-      <img src="{{author.image}}">
-      Cheers,<br/>
-      <span class="name">{{author.name}}</span>
-    </p>
+      <button id="add">Hinzufügen</button>
+
+	<iron-ajax id="queryTreeIds" url="http://www.mocky.io/v2/5729139b0f00002324e2940b" params='{}'  handle-as="json" on-response="handleResponseTreeIds"  debounce-duration="300"></iron-ajax>
+	<iron-ajax id="queryCategoriesUuid" url="http://www.mocky.io/v2/5729154c0f00006e24e29410" params='{}'  handle-as="json" on-response="handleResponseCategoriesUuid"  debounce-duration="300"></iron-ajax>
+
+  </template>
+
+</dom-module>
+
+<dom-module id="buuild-source-select-item">
+
+  <style>
+    :host {
+      display: block;
+      box-sizing: border-box;
+      border-bottom: 1px solid #eee;
+      line-height: 150%;
+  }
+   
+  :host ::content em {
+    
+      display: inline-block;
+      background: #eee;
+      padding: 2px 10px;
+      font-size: 12px;
+      line-height: 100%;    
+      font-style: normal;
+  }
+
+  </style>
+
+  <template>
+    <content></content>
+    <button id="delete">Löschen</button>
   </template>
 
 </dom-module>
@@ -54,36 +79,87 @@ Example:
 
     properties: {
 
-      /**
-       * `fancy` indicates that the element should don a monocle and tophat,
-       * while checking its pocket watch.
-       */
-      fancy: Boolean,
+        deletable: {
+            
+            type: Boolean,
+            value: true
+        },
+    },
 
-      /**
-       * Describes the author of the element, but is really just an excuse to
-       * show off JSDoc annotations.
-       *
-       * @type {{name: string, image: string}}
-       */
-      author: {
-        type: Object,
-        // Use `value` to provides a default value for a property, by setting it
-        // on your element's prototype.
-        //
-        // If you provide a function, as we do here, Polymer will call that
-        // _per element instance_.
-        //
-        // We do that to ensure that each element gets its own copy of the
-        // value, rather than having it shared across all instances (via the
-        // prototype).
-        value: function() {
-          return {
-            name:  'Dimitri Glazkov',
-            image: 'http://addyosmani.com/blog/wp-content/uploads/2013/04/unicorn.jpg',
-          };
+    // Element Lifecycle
+
+    ready: function() {
+      // `ready` is called after all elements have been configured, but
+      // propagates bottom-up. This element's children are ready, but parents
+      // are not.
+      //
+      // This is the point where you should make modifications to the DOM (when
+      // necessary), or kick off any processes the element wants to perform.
+    },
+
+    attached: function() {
+      // `attached` fires once the element and its parents have been inserted
+      // into a document.
+      //
+      // This is a good place to perform any work related to your element's
+      // visual state or active behavior (measuring sizes, beginning animations,
+      // loading resources, etc).
+
+        var these = this;
+
+       // Assign items to element
+       
+        these.$.add.addEventListener('click', these.addItem.bind(these));
+    },
+
+    detached: function() {
+      // The analog to `attached`, `detached` fires when the element has been
+      // removed from a document.
+      //
+      // Use this to clean up anything you did in `attached`.
+    },
+
+    // Element Behavior
+      
+    items: function() {
+    
+        var these =this;
+        return these.getEffectiveChildren();
+    },
+
+    addItem: function() {
+
+        
+
+    },
+
+    // Selection dialog for trees 
+    selectTreeId: function() {
+
+    },
+
+    // Selection dialog for categories 
+    selectCategoriesUuid: function() {
+
+    },
+
+  });
+
+ Polymer({
+
+    is: 'buuild-source-select-item',
+
+    properties: {
+
+        treeId: {
+
+            type: Number
+        },
+
+        categoriesUuid: {
+
+            type: String
         }
-      },
 
     },
 
@@ -105,45 +181,37 @@ Example:
       // This is a good place to perform any work related to your element's
       // visual state or active behavior (measuring sizes, beginning animations,
       // loading resources, etc).
-    },
+
+        var these = this;
+
+        var deleteButton = these.$.delete;
+
+        deleteButton.addEventListener('click', these.removeItem.bind(these) );
+
+   },
 
     detached: function() {
       // The analog to `attached`, `detached` fires when the element has been
       // removed from a document.
       //
       // Use this to clean up anything you did in `attached`.
+
+   
     },
 
-    // Element Behavior
+    // Remove item
+    removeItem: function() {
 
-    /**
-     * The `buuild-source-select-lasers` event is fired whenever `fireLasers` is called.
-     *
-     * @event buuild-source-select-lasers
-     * @detail {{sound: String}}
-     */
+        var these = this;
 
-    /**
-     * Sometimes it's just nice to say hi.
-     *
-     * @param {string} greeting A positive greeting.
-     * @return {string} The full greeting.
-     */
-    sayHello: function(greeting) {
-      var response = greeting || 'Hello World!';
-      return 'buuild-source-select says, ' + response;
+        if ( confirm("Wirklich löschen?") ) {
+        
+            var parent = these.parentNode;
+            Polymer.dom(parent).removeChild(these);
+        }
     },
-
-    /**
-     * Attempts to destroy this element's enemies with an any beam of light!
-     *
-     * Or, at least, dispatches an event in the vain hope that someone else will
-     * do the zapping.
-     */
-    fireLasers: function() {
-      this.fire('buuild-source-select-lasers', {sound: 'Pew pew!'});
-    }
 
   });
+
 
 </script>
