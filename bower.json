@@ -1,8 +1,8 @@
 {
   "name": "buuild-source-select",
-  "version": "1.0.0",
+  "version": "0.0.1",
   "authors": [
-    "Anonymous <anonymous@example.com>"
+    "Jens Gassmann <jg@gassmann.it>"
   ],
   "description": "An element providing a solution to no problem in particular.",
   "keywords": [
@@ -13,7 +13,7 @@
   ],
   "main": "buuild-source-select.html",
   "license": "http://polymer.github.io/LICENSE.txt",
-  "homepage": "https://github.com/<USERNAME>/buuild-source-select/",
+  "homepage": "https://github.com/itnode/buuild-source-select/",
   "ignore": [
     "/.*",
     "/test/",
