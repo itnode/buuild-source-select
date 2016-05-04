@@ -8,6 +8,13 @@ Code distributed by Google as part of the polymer project is also
 subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
 -->
 <link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../iron-ajax/iron-ajax.html">
+<link rel="import" href="../iron-list/iron-list.html">
+<link rel="import" href="../paper-dialog/paper-dialog.html">
+<link rel="import" href="../paper-button/paper-button.html">
+<link rel="import" href="../paper-input/paper-input.html">
+<link rel="import" href="../paper-checkbox/paper-checkbox.html">
+
 
 <!--
 
@@ -35,8 +42,50 @@ Example:
     <content></content>
       <button id="add">Hinzufügen</button>
 
-	<iron-ajax id="queryTreeIds" url="http://www.mocky.io/v2/5729139b0f00002324e2940b" params='{}'  handle-as="json" on-response="handleResponseTreeIds"  debounce-duration="300"></iron-ajax>
-	<iron-ajax id="queryCategoriesUuid" url="http://www.mocky.io/v2/5729154c0f00006e24e29410" params='{}'  handle-as="json" on-response="handleResponseCategoriesUuid"  debounce-duration="300"></iron-ajax>
+	<paper-dialog id="selectTreeId">
+		  <h2>Auswahl Quelle</h2>
+
+
+          <paper-input label="Suche"></paper-input>
+
+		  <paper-dialog-scrollable>
+  
+              <iron-ajax url="http://dev.nacworld.net:8000/admin/api/select_trees" params='{"filter_meta_kind": "article"}' last-response="{{data}}" auto></iron-ajax>
+				<iron-list items="[[data]]" as="item">
+			    <template>
+                    <paper-button on-click="doSelectTreeId" data-tree-id$="[[item.tree_id]]">[[item.name]] [[item.description]]</paper-button>
+		    	</template>
+		    </iron-list>
+
+  		  </paper-dialog-scrollable>
+	    	<div class="buttons">
+		    <paper-button dialog-dismiss>Abbrechen</paper-button>
+	  </div>
+	</paper-dialog>	
+   
+
+	<paper-dialog id="selectCategoriesUuid">
+		  <h2>Auswahl Kategorien</h2>
+
+
+          <paper-input label="Suche"></paper-input>
+
+		  <paper-dialog-scrollable>
+  
+				<iron-ajax url="http://dev.nacworld.net:8000/admin/api/select_categories" last-response="{{data}}" auto></iron-ajax>
+				<iron-list items="[[data]]" as="item">
+			    <template>
+                    <paper-checkbox value$="[[item.category_uuid]]">[[item.name]]</paper-checkbox>
+		    	</template>
+		    </iron-list>
+
+  		  </paper-dialog-scrollable>
+	    	<div class="buttons">
+		    <paper-button dialog-dismiss>Abbrechen</paper-button>
+    		<paper-button dialog-confirm>Übernehmen</paper-button>
+	  </div>
+	</paper-dialog>	
+
 
   </template>
 
@@ -66,7 +115,18 @@ Example:
 
   <template>
     <content></content>
-    <button id="delete">Löschen</button>
+
+    <paper-button id="delete" dialog-confirm>Löschen</paper-button>
+	
+	<paper-dialog id="deleteConfirm" class="shadow-2dp">
+          <h2>Selektion löschen</h2>
+	    	<div class="buttons">
+		    <paper-button dialog-dismiss>Abbrechen</paper-button>
+    		<paper-button dialog-confirm>Löschen</paper-button>
+	  </div>
+	</paper-dialog>	
+ 
+
   </template>
 
 </dom-module>
@@ -129,17 +189,64 @@ Example:
 
     addItem: function() {
 
-        
+		var these = this;
+		these.selectTreeId();        
 
     },
 
     // Selection dialog for trees 
     selectTreeId: function() {
 
+		var these = this;
+
+
+        var select_dialog = these.$.selectTreeId;
+
+        select_dialog.addEventListener('iron-overlay-closed', function(e) {
+
+            if ( e.detail.confirmed ) {
+
+               console.dir(e) ;
+            }
+            
+                
+
+        });
+		
+        select_dialog.open();
+        
+
+
+    },
+
+    doSelectTreeId: function(e) {
+
+        var these = this;
+        
+        var select_dialog = these.$.selectTreeId;
+        console.log(e.target.getAttribute('data-tree-id'));
+        select_dialog.close();
+        these.$.selectCategoriesUuid.open();
     },
 
     // Selection dialog for categories 
     selectCategoriesUuid: function() {
+
+        var these = this;
+        
+        var select_categories_uuid = these.$.selectCategoriesUuid;
+
+        select_categories_uuid.addEventListener('iron-overlay-closed', function(e) {
+
+            if ( e.detail.confirmed ) {
+
+               console.dir(e) ;
+            }
+                           
+
+        });
+		
+        select_categories_uuid.open();
 
     },
 
@@ -204,11 +311,17 @@ Example:
 
         var these = this;
 
-        if ( confirm("Wirklich löschen?") ) {
+        these.$.deleteConfirm.addEventListener('iron-overlay-closed', function(e) {
+
+            if ( e.detail.confirmed ) { 
+                var parent = these.parentNode;
+                Polymer.dom(parent).removeChild(these);
+            } 
+        });
         
-            var parent = these.parentNode;
-            Polymer.dom(parent).removeChild(these);
-        }
+        these.$.deleteConfirm.open()
+        
+       
     },
 
   });
