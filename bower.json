@@ -20,15 +20,15 @@
     "/demo/"
   ],
   "dependencies": {
-    "polymer": "Polymer/polymer#^1.0.0",
-    "iron-ajax": "PolymerElements/iron-ajax#^1.2.0",
-    "paper-dialog": "PolymerElements/paper-dialog#^1.0.4",
-    "paper-input": "PolymerElements/paper-input#^1.1.11",
-    "iron-list": "PolymerElements/iron-list#^1.3.1",
-    "paper-checkbox": "PolymerElements/paper-checkbox#^1.1.3"
+    "polymer": "Polymer/polymer",
+    "iron-ajax": "PolymerElements/iron-ajax",
+    "paper-dialog": "PolymerElements/paper-dialog",
+    "paper-input": "PolymerElements/paper-input",
+    "iron-list": "PolymerElements/iron-list",
+    "paper-checkbox": "PolymerElements/paper-checkbox"
   },
   "devDependencies": {
-    "iron-component-page": "PolymerElements/iron-component-page#^1.0.0",
+    "iron-component-page": "PolymerElements/iron-component-page",
     "web-component-tester": "*"
   }
 }
