@@ -25,7 +25,8 @@
     "paper-dialog": "PolymerElements/paper-dialog",
     "paper-input": "PolymerElements/paper-input",
     "iron-list": "PolymerElements/iron-list",
-    "paper-checkbox": "PolymerElements/paper-checkbox"
+    "paper-checkbox": "PolymerElements/paper-checkbox",
+    "paper-button": "PolymerElements/paper-button"
   },
   "devDependencies": {
     "iron-component-page": "PolymerElements/iron-component-page",
