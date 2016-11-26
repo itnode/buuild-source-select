@@ -34,26 +34,48 @@ Example:
     :host {
       display: block;
       box-sizing: border-box;
+      padding: 10px;
+      background: #fff;
+    }
+
+    #selectCategoriesUuid,
+    #selectTreeId {
+    
+        width: 400px;
+        max-width: 80vw;
+        max-height: 80vh;
+    }
+    :host ::content .iron-list {
+
+        max-height: 240px;
+    }
+
+    :host ::content .iron-list > div {
+
+        padding: 5px 10px 5px 25px;
+        cursor: pointer;
     }
 
   </style>
 
   <template>
     <content></content>
-      <button id="add">Hinzufügen</button>
+      <button id="add">Quelle hinzufügen</button>
 
 	<paper-dialog id="selectTreeId">
-		  <h2>Auswahl Quelle</h2>
+		  <h2>1. Auswahl Quelle</h2>
 
+          <p>Bitte die gewünschte Datenbank als Quelle wählen</p>
 
-          <paper-input label="Suche"></paper-input>
+          <p><label>Suche/Filterung nach Namen</label>
+          <input value="{{filterTreeName::input}}" type="text" /></p>
 
 		  <paper-dialog-scrollable>
   
-              <iron-ajax url="http://dev.nacworld.net:8000/admin/api/select_trees" params='{"filter_meta_kind": "article"}' last-response="{{data}}" auto></iron-ajax>
-				<iron-list items="[[data]]" as="item">
+              <iron-ajax id="ajaxSelectTree" url="{{remoteTrees}}" params="[[remoteTreesParams]]" last-response="{{dataTrees}}" auto></iron-ajax>
+				<iron-list items="[[dataTrees]]" as="item">
 			    <template>
-                    <paper-button on-click="doSelectTreeId" data-tree-id$="[[item.tree_id]]">[[item.name]] [[item.description]]</paper-button>
+                    <div on-click="doSelectTreeId" data-tree$="[[item]]">[[item.name]]<br /><small>[[item.instance_name]]</small></div>
 		    	</template>
 		    </iron-list>
 
@@ -65,17 +87,20 @@ Example:
    
 
 	<paper-dialog id="selectCategoriesUuid">
-		  <h2>Auswahl Kategorien</h2>
 
+          <h2>2. Auswahl Kategorien</h2>
 
-          <paper-input label="Suche"></paper-input>
+          <p>Bitte die gewünschten Kategorien wählen</p>
+
+            <p>          <label>Suche/Filterung nach Namen</label>
+            <input value="{{filterCategory::input}}" type="text" /></p>
 
 		  <paper-dialog-scrollable>
   
-				<iron-ajax url="http://dev.nacworld.net:8000/admin/api/select_categories" last-response="{{data}}" auto></iron-ajax>
-				<iron-list items="[[data]]" as="item">
+				<iron-ajax id="ajaxSelectCategories" url="[[remoteCategories]]" params="[[remoteCategoriesParams]]" last-response="{{dataCategories}}"  auto></iron-ajax>
+				<iron-list items="[[dataCategories]]" as="item">
 			    <template>
-                    <paper-checkbox value$="[[item.category_uuid]]">[[item.name]]</paper-checkbox>
+                    <div><label class="second"><input type="checkbox" data-node$="[[item]]" name="category_uuid" value$="[[item.uuid]]"  />[[item.name]]</label></div>
 		    	</template>
 		    </iron-list>
 
@@ -100,26 +125,26 @@ Example:
       border-bottom: 1px solid #eee;
       line-height: 150%;
   }
-   
-  :host ::content em {
-    
-      display: inline-block;
-      background: #eee;
-      padding: 2px 10px;
-      font-size: 12px;
-      line-height: 100%;    
-      font-style: normal;
-  }
+  
+    :host #delete {
+
+        color: #900;
+    }
 
   </style>
 
   <template>
-    <content></content>
+
+     [[treeObject.name]] 
+     <small>[[treeObject.instance_name]]</small>
+
+     <content></content>
+     <span id="itemCategories"></span>
 
     <paper-button id="delete" dialog-confirm>Löschen</paper-button>
 	
 	<paper-dialog id="deleteConfirm" class="shadow-2dp">
-          <h2>Selektion löschen</h2>
+          <h2>Quelle [[treeObject.name]] löschen</h2>
 	    	<div class="buttons">
 		    <paper-button dialog-dismiss>Abbrechen</paper-button>
     		<paper-button dialog-confirm>Löschen</paper-button>
@@ -128,6 +153,33 @@ Example:
  
 
   </template>
+
+  
+
+</dom-module>
+
+<dom-module id="buuild-source-select-category">
+
+    <style>
+
+      :host em {
+    
+          display: inline-block;
+          background: #eee;
+          padding: 3px 6px;
+          font-size: 12px;
+          line-height: 100%;    
+          font-style: normal;
+      }
+
+    </style>
+
+    <template>
+    
+        <input type="hidden" name="[[hiddenName]]" value="[[ nodeObject.uuid ]]" />
+        <em>[[nodeObject.name]]</em>
+ 
+    </template>
 
 </dom-module>
 
@@ -144,6 +196,57 @@ Example:
             type: Boolean,
             value: true
         },
+
+        restrictByInstance: {
+            type: Boolean,
+            value: false
+        },
+
+        filterCategory: {
+    
+            type: String,
+            notify: true,
+            value: ""
+        },
+ 
+        filterTreeName: {
+    
+            type: String,
+            notify: true,
+            value: ""
+        },
+
+        selectionTreeObject: {
+
+            type: Object,
+            value: {}
+        },
+
+        selectionCategoriesUuid: {
+
+            type: Array,
+            value: []
+        },
+
+        remoteTrees: {
+
+            type: String,
+        },
+
+        remoteTreesParams: {
+
+            type: Object,
+        },
+
+        remoteCategories: {
+
+            type: String,
+        },
+
+        remoteCategoriesParams: {
+
+            type: Object,
+        }
     },
 
     // Element Lifecycle
@@ -170,6 +273,63 @@ Example:
        // Assign items to element
        
         these.$.add.addEventListener('click', these.addItem.bind(these));
+
+        // Handle remote filter requests for category name
+        these.addEventListener('filter-category-changed', function(e) {
+
+            var filter_name = e.detail.value;
+
+            these.$.ajaxSelectCategories.params.name = filter_name;
+                       
+            if ( these.restrictByInstance ) {  
+
+                // Begrenzung der Kategorien auf die der ausgewähten Datenbank-Instanz
+                these.$.ajaxSelectCategories.params.selected_instance_id = these.selectionTreeObject.instance_id;
+                these.$.ajaxSelectCategories.params.selected_tree_id     = these.selectionTreeObject.tree_id;
+            }
+            
+            these.$.ajaxSelectCategories.generateRequest();
+
+        });
+
+        // Handle remote filter requests for tree name
+        these.addEventListener('filter-tree-name-changed', function(e) {
+
+            var filter_name = e.detail.value;
+            these.$.ajaxSelectTree.params.name = filter_name;
+            these.$.ajaxSelectTree.generateRequest();
+        });
+
+
+       var select_categories_uuid = these.$.selectCategoriesUuid;
+       var select_tree_id = these.$.selectTreeId;
+
+       select_categories_uuid.addEventListener('iron-overlay-closed', function(e) {
+
+            var checked = select_categories_uuid.querySelectorAll('input[type="checkbox"]:checked');
+       
+            if ( e.detail.confirmed ) {
+                
+                var values  = Array.prototype.map.call(checked, function (e) {return JSON.parse(e.getAttribute('data-node')); });
+                these.doAddItem(these.selectionTreeObject, values  );
+            }
+            
+            //reset dialog, checkbox and inputs
+            checked.forEach(function(element){ element.checked = false; });
+            these.filterTreeName = "";
+            these.filterCategory = "";
+        });
+       
+       select_tree_id.addEventListener('iron-overlay-closed', function(e) {
+
+           //reset dialog, checkbox and inputs
+           var checked = select_categories_uuid.querySelectorAll('input[type="checkbox"]:checked');
+           checked.forEach(function(element){ element.checked = false; });
+           these.filterTreeName = "";
+           these.filterCategory = "";
+           
+       });
+
     },
 
     detached: function() {
@@ -177,6 +337,7 @@ Example:
       // removed from a document.
       //
       // Use this to clean up anything you did in `attached`.
+      
     },
 
     // Element Behavior
@@ -198,57 +359,64 @@ Example:
     selectTreeId: function() {
 
 		var these = this;
-
-
         var select_dialog = these.$.selectTreeId;
-
-        select_dialog.addEventListener('iron-overlay-closed', function(e) {
-
-            if ( e.detail.confirmed ) {
-
-               console.dir(e) ;
-            }
-            
-                
-
-        });
-		
         select_dialog.open();
-        
-
-
     },
 
     doSelectTreeId: function(e) {
 
         var these = this;
+
+        var el = e.target;
+
+        while ( !el.dataset.tree) {
+            el = el.parentElement;
+        }
+
+        var tree_object_json = el.dataset.tree;
+
+        if ( tree_object_json !== undefined ) {  
         
-        var select_dialog = these.$.selectTreeId;
-        console.log(e.target.getAttribute('data-tree-id'));
-        select_dialog.close();
-        these.$.selectCategoriesUuid.open();
+            // Store selected id
+            these.selectionTreeObject = JSON.parse(tree_object_json);
+
+            // Close Database selection
+            var select_dialog = these.$.selectTreeId;
+            select_dialog.close();
+
+
+            // Open Category Selection
+            these.selectCategoriesUuid();
+        }
     },
 
     // Selection dialog for categories 
     selectCategoriesUuid: function() {
 
         var these = this;
-        
         var select_categories_uuid = these.$.selectCategoriesUuid;
-
-        select_categories_uuid.addEventListener('iron-overlay-closed', function(e) {
-
-            if ( e.detail.confirmed ) {
-
-               console.dir(e) ;
-            }
-                           
-
-        });
-		
         select_categories_uuid.open();
 
     },
+
+    doAddItem: function(treeObject,categoriesUuid) {
+
+        var these = this;
+
+        var newItem = document.createElement('buuild-source-select-item');
+        Polymer.dom(these).appendChild(newItem);
+
+        newItem.treeObject     = treeObject;
+
+        categoriesUuid.forEach( function(nodeObject) {
+
+            var newCategory = document.createElement('buuild-source-select-category');
+            Polymer.dom(newItem.$.itemCategories).appendChild(newCategory);
+            newCategory.nodeObject     = nodeObject;
+            newCategory.parentTree     = these.treeObject;
+        });
+
+     },
 
   });
 
@@ -258,16 +426,10 @@ Example:
 
     properties: {
 
-        treeId: {
+        treeObject: {
 
-            type: Number
-        },
-
-        categoriesUuid: {
-
-            type: String
+            type: Object
         }
-
     },
 
     // Element Lifecycle
@@ -289,13 +451,13 @@ Example:
       // visual state or active behavior (measuring sizes, beginning animations,
       // loading resources, etc).
 
+
+
         var these = this;
-
         var deleteButton = these.$.delete;
-
         deleteButton.addEventListener('click', these.removeItem.bind(these) );
 
-   },
+    },
 
     detached: function() {
       // The analog to `attached`, `detached` fires when the element has been
@@ -320,8 +482,58 @@ Example:
         });
         
         these.$.deleteConfirm.open()
-        
-       
+    }
+});
+
+
+
+Polymer({
+
+    is: 'buuild-source-select-category',
+
+    properties: {
+
+        nodeObject: {
+
+            type: Object
+        }
+    },
+
+    // Element Lifecycle
+
+    ready: function() {
+      // `ready` is called after all elements have been configured, but
+      // propagates bottom-up. This element's children are ready, but parents
+      // are not.
+      //
+      // This is the point where you should make modifications to the DOM (when
+      // necessary), or kick off any processes the element wants to perform.
+    },
+
+    attached: function() {
+      // `attached` fires once the element and its parents have been inserted
+      // into a document.
+      //
+      // This is a good place to perform any work related to your element's
+      // visual state or active behavior (measuring sizes, beginning animations,
+      // loading resources, etc).
+
+        var these = this;
+        these.hiddenName = "tree_" + these.parentItem().treeObject.tree_id;
+    },
+
+    detached: function() {
+      // The analog to `attached`, `detached` fires when the element has been
+      // removed from a document.
+      //
+      // Use this to clean up anything you did in `attached`.
+   
+    },
+
+    parentItem: function() {
+
+        var el = this;
+        return el.closest('buuild-source-select-item');
     },
 
   });
