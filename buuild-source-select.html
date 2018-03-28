@@ -30,7 +30,10 @@ Example:
 -->
 <dom-module id="buuild-source-select">
 
-  <style>
+ 
+  <template>
+
+    <style>
     :host {
       display: block;
       box-sizing: border-box;
@@ -45,21 +48,19 @@ Example:
         max-width: 80vw;
         max-height: 80vh;
     }
-    :host ::content .iron-list {
+    :host ::slot .iron-list {
 
         max-height: 240px;
     }
 
-    :host ::content .iron-list > div {
+    :host ::slot .iron-list > div {
 
         padding: 5px 10px 5px 25px;
         cursor: pointer;
     }
 
   </style>
-
-  <template>
-    <content></content>
+    <slot></slot>
       <button id="add">Quelle hinzufügen</button>
 
 	<paper-dialog id="selectTreeId">
@@ -118,7 +119,10 @@ Example:
 
 <dom-module id="buuild-source-select-item">
 
-  <style>
+ 
+  <template>
+
+ <style>
     :host {
       display: block;
       box-sizing: border-box;
@@ -133,12 +137,10 @@ Example:
 
   </style>
 
-  <template>
-
      [[treeObject.name]] 
      <small>[[treeObject.instance_name]]</small>
 
-     <content></content>
+     <slot></slot>
      <span id="itemCategories"></span>
 
     <paper-button id="delete" dialog-confirm>Löschen</paper-button>
@@ -160,7 +162,10 @@ Example:
 
 <dom-module id="buuild-source-select-category">
 
-    <style>
+ 
+    <template>
+
+        <style>
 
       :host em {
     
@@ -173,8 +178,6 @@ Example:
       }
 
     </style>
-
-    <template>
     
         <input type="hidden" name="[[hiddenName]]" value="[[ nodeObject.uuid ]]" />
         <em>[[nodeObject.name]]</em>
@@ -533,6 +536,8 @@ Polymer({
     parentItem: function() {
 
         var el = this;
+
+        console.dir(el);
         return el.closest('buuild-source-select-item');
     },
 
