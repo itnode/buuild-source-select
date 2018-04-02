@@ -41,6 +41,10 @@ Example:
       background: #fff;
     }
 
+    :host * {
+      font-family: 'open_sans', sans-serif;
+    }
+
     #selectCategoriesUuid,
     #selectTreeId {
         width: 400px;
@@ -55,6 +59,28 @@ Example:
     :host iron-list > div {
         padding: 5px 10px 5px 25px;
         cursor: pointer;
+    }
+
+    :host .buttons {
+        padding: 12px;
+        text-align: right;
+    }
+
+    :host paper-dialog {
+        box-shadow: 0 16px 24px 2px rgba(0, 0, 0, 0.14), 0 6px 30px 5px rgba(0, 0, 0, 0.12), 0 8px 10px -5px rgba(0, 0, 0, 0.4);
+    }
+
+    :host button {
+    
+        display: inline-block;
+        margin: 0;
+        padding: 8px 15px;
+        background: rgb(91,148,47);
+        color: #fff;
+        line-height: 18px;
+        font-size: 13px;
+        font-weight: 400;
+        border: 0 none;
     }
 
   </style>
@@ -125,7 +151,7 @@ Example:
       display: block;
       box-sizing: border-box;
       border-bottom: 1px solid #eee;
-      line-height: 150%;
+      line-height: 200%;
   }
   
     :host #delete {
@@ -405,16 +431,18 @@ Example:
         var these = this;
 
         var newItem = document.createElement('buuild-source-select-item');
-        Polymer.dom(these).appendChild(newItem);
+        these.appendChild(newItem);
 
         newItem.treeObject     = treeObject;
 
         categoriesUuid.forEach( function(nodeObject) {
 
             var newCategory = document.createElement('buuild-source-select-category');
-            Polymer.dom(newItem.$.itemCategories).appendChild(newCategory);
-            newCategory.nodeObject     = nodeObject;
-            newCategory.parentTree     = these.treeObject;
+            newItem.$.itemCategories.appendChild(newCategory);
+            
+            newCategory.hiddenName = "tree_" + treeObject.tree_id;
+            newCategory.nodeObject = nodeObject;
+            newCategory.parentTree = treeObject;
         });
 
      },
@@ -478,7 +506,7 @@ Example:
 
             if ( e.detail.confirmed ) { 
                 var parent = these.parentNode;
-                Polymer.dom(parent).removeChild(these);
+                parent.removeChild(these);
             } 
         });
         
@@ -520,8 +548,7 @@ Polymer({
       // loading resources, etc).
 
         var these = this;
-        these.hiddenName = "tree_" + these.parentItem().treeObject.tree_id;
-    },
+   },
 
     detached: function() {
       // The analog to `attached`, `detached` fires when the element has been
@@ -529,15 +556,7 @@ Polymer({
       //
       // Use this to clean up anything you did in `attached`.
    
-    },
-
-    parentItem: function() {
-
-        var el = this;
-
-        console.dir(el);
-        return el.closest('buuild-source-select-item');
-    },
+    }
 
   });
 
